@@ -75,7 +75,7 @@ training_params = {
     'beta': 0.,  ## parameter for the +u term
     
     'optimizer': optim.SGD(NN.parameters(), lr = .005, momentum = .2),
-    'num_iterations': 800,
+    'num_iterations': 5000,
     
     'lambda': 1. #weight parameter for the boundary loss
     }
@@ -87,8 +87,8 @@ from visualization.plots_time_dependent import plot_level_set_time_dependent
 delta_x_list = [.5, .3, .2, .1]
 delta_t_list = [.05, .03, .02, .01]
 alpha_list = [2.5, 2., 1.5, 1.]
-N_col_list = [100, 100, 100, 100]
-N_b_list = [50, 50, 50, 50, 50]
+N_col_list = [40, 80, 120, 200]
+N_b_list = [40, 40, 40, 40, 40]
 rounds = len(alpha_list)
 
 n_grid = 100
@@ -107,7 +107,7 @@ for i in range(rounds):
     training_params['n_boundary_points'] = N_b_list[i]
     
     if i == rounds-1:
-        training_params['num_iterations'] = 5000
+        training_params['num_iterations'] = 8000
 
     total_loss, PDE_loss, boundary_loss = train_time_dependent(NN, domain, training_params)
 

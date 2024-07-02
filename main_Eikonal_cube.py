@@ -14,7 +14,7 @@ from time import time as t
 from NeuralNetworks.NNs import FCFF_3L, FCFF_2L
 
 from PointSampling.Cube import data_gen_cube
-from visualization.plots_cube import plot_2d_proj, plot_2d_proj_w
+from visualization.plots_cube import plot_2d_proj, plot_2d_proj_w, plot_level_set_cube
 
 from Hamiltonians.Eikonal_LxF import Eikonal_sq_LF_multiD
 
@@ -22,7 +22,7 @@ from Training.training import train
 from error_test.cube_error import error_cube
 
 
-dim = 5
+dim = 2
 
 side_length = 6.
 
@@ -38,12 +38,12 @@ def g(X):
 
 delta_list = [.75, .5, .3, .1, .05]
 alpha_list = [2.5, 2., 1.5, 1., .5]
-N_col_list = [50, 50, 50, 50, 50]
-N_b_list = [10, 10, 10, 10, 10]
+N_col_list = [20, 20, 20, 20, 20]
+N_b_list = [4, 4, 4, 4, 10]
 rounds = len(delta_list)
 
-NN = FCFF_3L([dim,50,50])
-#NN = FCFF_2L([dim,20])
+#NN = FCFF_3L([dim,10,10])
+NN = FCFF_2L([dim,40])
 
 training_params = {
     'numerical_scheme': Eikonal_sq_LF_multiD,
@@ -124,4 +124,6 @@ plt.title('$\log_{10} (E_{\infty})$', fontsize = 'xx-large')
 plt.show()
 
 
+#%%
 
+plot_level_set_cube(X_axis, Y_axis, NN, n_grid, side_length, levels = [0, .5, 1., 1.5, 2.5, 2.9], dim = None)
