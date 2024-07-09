@@ -42,8 +42,8 @@ N_col_list = [20, 20, 20, 20, 20]
 N_b_list = [4, 4, 4, 4, 10]
 rounds = len(delta_list)
 
-#NN = FCFF_3L([dim,10,10])
-NN = FCFF_2L([dim,40])
+NN = FCFF_3L([dim,20,20])
+#NN = FCFF_2L([dim,40])
 
 training_params = {
     'numerical_scheme': Eikonal_sq_LF_multiD,
@@ -61,7 +61,6 @@ training_params = {
 
 
 
-n_grid = 100 # Number of grid points for comparison with the ground truth
 
 MSE_history = torch.zeros(rounds)
 L_inf_error_history = torch.zeros(rounds)
@@ -78,7 +77,9 @@ for i in range(rounds):
     total_loss, PDE_loss, boundary_loss = train(NN, domain, training_params)
     t1 = t() - t0 
     
-    MSE, L_inf = error_cube(NN, side_length, n_grid)
+    
+    MC_points = int(1e5) # Number of grid points for comparison with the ground truth
+    MSE, L_inf = error_cube(NN, side_length, MC_points)
     
     MSE_history[i] = MSE
     L_inf_error_history[i] = L_inf
@@ -87,6 +88,7 @@ for i in range(rounds):
     X_axis = 0
     Y_axis = 1
 
+    n_grid = 100
     plot_2d_proj(X_axis, Y_axis, NN, n_grid, side_length)
 
     

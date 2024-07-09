@@ -56,7 +56,7 @@ training_params = {
     'beta': 0.,  ## parameter for the +u_i term
     
     'optimizer': optim.SGD(NN.parameters(), lr = .02, momentum = .2),
-    'num_iterations': 2000,
+    'num_iterations': 5000,
     'lambda': 1. #weight parameter for the boundary loss
     }
 
@@ -76,8 +76,8 @@ for i in range(rounds):
     total_loss, PDE_loss, boundary_loss = train(NN, domain, training_params)
     t1 = t() - t0 
     
-    n__comp = int(1e5) # Number of points for comparison with the ground truth
-    MSE, L_inf = error_ball(NN, max(radii), n__comp)
+    MC_points = int(1e5) # Number of points for comparison with the ground truth
+    MSE, L_inf = error_ball(NN, max(radii), MC_points)
     
     MSE_history[i] = MSE
     L_inf_error_history[i] = L_inf

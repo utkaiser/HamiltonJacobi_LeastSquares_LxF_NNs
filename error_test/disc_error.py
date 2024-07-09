@@ -17,20 +17,20 @@ def unif_sample_sphere(N, dim):
     return X/X_norms
 
 
-def error_ball(NN, R, n_grid):
+def error_ball(NN, R, n_points):
     
     dim = NN.L1.in_features
     
     
     with torch.no_grad():
         
-        r_grid = R*torch.linspace(0, 1, n_grid)**(1/dim) 
+        Rs = R*(torch.rand(n_points))**(1/dim)
         
-        X = unif_sample_sphere(n_grid, dim)
+        X = unif_sample_sphere(n_points, dim)
         
-        X = r_grid.unsqueeze(-1)*X
+        X = Rs.unsqueeze(-1)*X
         
-        Y = R - r_grid
+        Y = R - Rs
         Y_hat = NN(X).squeeze()
         
         MSE = ((Y - Y_hat)**2).mean()
@@ -40,7 +40,9 @@ def error_ball(NN, R, n_grid):
     return MSE, L_inf_error
 
 
-def error_annulus(NN, radii, n_grid):
+def error_annulus(NN, radii, n_points):
+    
+    ## To do
     
     r_max = max(radii)
     r_min = min(radii)
@@ -55,18 +57,18 @@ def error_annulus(NN, radii, n_grid):
         a = r_min**dim
         b = r_max**dim - a
         
-        r_grid =  (a + b*torch.linspace(0, 1, n_grid))**(1/dim)
+        Rs =  (a + b*torch.rand(n_points))**(1/dim)
         
         
-        X = unif_sample_sphere(n_grid, dim)
+        X = unif_sample_sphere(n_points, dim)
         
-        X = r_grid.unsqueeze(-1)*X
+        X = Rs.unsqueeze(-1)*X
         
         
-        Y = r_grid.clone()
+        Y = Rs.clone()
         
-        Y[r_grid>r_mid] = r_max - r_grid[r_grid>r_mid]
-        Y[r_grid<=r_mid] = r_grid[r_grid<=r_mid] - r_min
+        Y[Rs>r_mid] = r_max - Rs[Rs>r_mid]
+        Y[Rs<=r_mid] = Rs[Rs<=r_mid] - r_min
         
         Y_hat = NN(X).squeeze()
         

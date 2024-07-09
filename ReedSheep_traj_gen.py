@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 
 # number of sample trajectories
-n_trajectories = int(1e+4)
+n_trajectories = int(1e2)
 
 
 side_length = 12.

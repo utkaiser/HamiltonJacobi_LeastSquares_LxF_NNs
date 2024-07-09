@@ -43,7 +43,7 @@ N_col_list = [50, 50, 50, 50, 50]
 N_b_list = [10, 10, 10, 10, 10]
 rounds = len(delta_list)
 
-NN = FCFF_3L([dim,30,30])
+NN = FCFF_3L([dim,50,50])
 #NN = FCFF_2L([dim,20])
 
 training_params = {
@@ -56,7 +56,7 @@ training_params = {
     'beta': 0.,  ## parameter for the +u_i term
     
     'optimizer': optim.SGD(NN.parameters(), lr = .02, momentum = .2),
-    'num_iterations': 2000,
+    'num_iterations': 5000,
     'lambda': 1. #weight parameter for the boundary loss
     }
 
