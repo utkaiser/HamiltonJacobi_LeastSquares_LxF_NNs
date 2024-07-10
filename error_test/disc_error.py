@@ -25,6 +25,7 @@ def error_ball(NN, R, n_points):
     with torch.no_grad():
         
         Rs = R*(torch.rand(n_points))**(1/dim)
+        Rs[0] = 0.
         
         X = unif_sample_sphere(n_points, dim)
         
@@ -41,9 +42,7 @@ def error_ball(NN, R, n_points):
 
 
 def error_annulus(NN, radii, n_points):
-    
-    ## To do
-    
+        
     r_max = max(radii)
     r_min = min(radii)
     

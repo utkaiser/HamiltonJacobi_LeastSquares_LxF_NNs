@@ -58,10 +58,6 @@ def g(X):
     Ax = a*x 
     return .5*((x*Ax).sum(-1) - 1.)
 
-# Term multiplying | \nabla u|
-vec = torch.zeros([1, dim])
-vec[:,:2] = 1.
-
 def c(X):
     return .5 
     

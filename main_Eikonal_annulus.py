@@ -76,8 +76,8 @@ for i in range(rounds):
     total_loss, PDE_loss, boundary_loss = train(NN, domain, training_params)
     t1 = t() - t0 
     
-    n__comp = int(1e5) # Number of points for comparison with the ground truth
-    MSE, L_inf = error_annulus(NN, radii, n__comp)
+    MC_points = int(1e5) # Number of points for comparison with the ground truth
+    MSE, L_inf = error_annulus(NN, radii, MC_points)
     
     MSE_history[i] = MSE
     L_inf_error_history[i] = L_inf

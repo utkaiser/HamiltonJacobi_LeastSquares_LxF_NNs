@@ -17,6 +17,7 @@ def error_cube(NN, side_length, n_points):
         
         X = -1 + 2*torch.rand([n_points, dim])
         X = .5*side_length*X
+        X[0] = 0.*X[0]
         
         Y = side_length/2 - X.abs().max(-1)[0]
         Y_hat = NN(X).squeeze()
