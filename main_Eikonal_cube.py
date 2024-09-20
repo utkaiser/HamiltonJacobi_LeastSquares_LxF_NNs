@@ -22,7 +22,7 @@ from Training.training import train
 from error_test.cube_error import error_cube
 
 
-dim = 2
+dim = 3
 
 side_length = 6.
 
@@ -55,7 +55,7 @@ training_params = {
     'beta': 0.,  ## parameter for the +u_i term
     
     'optimizer': optim.SGD(NN.parameters(), lr = .02, momentum = .2),
-    'num_iterations': 2000,
+    'num_iterations': 3000,
     'lambda': 1. #weight parameter for the boundary loss
     }
 
