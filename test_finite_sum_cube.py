@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jun  4 12:00:16 2024
+Created on Wed Oct 16 09:23:41 2024
 
 @author: carlosesteveyague
 """
@@ -13,14 +13,13 @@ from time import time as t
 
 from NeuralNetworks.NNs import FCFF_3L, FCFF_2L
 
-from PointSampling.Cube import data_gen_cube
-from visualization.plots_cube import plot_2d_proj, plot_level_set_cube #, plot_2d_proj_w
+from PointSampling.Cube import data_gen_cube, get_unif_grid
+from visualization.plots_cube import plot_2d_proj, plot_level_set_cube
 from visualization.cube_training import plot_2d_proj_w
-
 
 from Hamiltonians.Eikonal_LxF import Eikonal_sq_LF_multiD
 
-from Training.training import train
+from Training.training_finite_sum import train_finite_sum
 from error_test.cube_error import error_cube
 
 
@@ -38,10 +37,15 @@ def f(X):
 def g(X):    
     return 0
 
-delta_list = [.7, .5, .3, .1, .01]
+delta_list = [.75, .5, .3, .1, .05]
 alpha_list = [2.5, 2., 1.5, 1., .5]
-N_col_list = [80, 80, 80, 80, 80]
-N_b_list = [20, 20, 20, 20, 20]
+#N_col_list = [2000, 2000, 2000, 2000, 2000]
+#N_b_list = [100, 100, 100, 100, 100]
+
+
+N_list = [15,25,40,50,60]
+
+
 rounds = len(delta_list)
 
 NN = FCFF_3L([dim,20,20])
@@ -57,31 +61,38 @@ training_params = {
     'beta': 0.,  ## parameter for the +u_i term
     
     'optimizer': optim.SGD(NN.parameters(), lr = .02, momentum = .2),
-    'num_iterations': 500,
+    'epochs': 500,
+    'batch_size': 200,
+    
     'lambda': 1. #weight parameter for the boundary loss
     }
-
-
 
 
 MSE_history = torch.zeros(rounds)
 L_inf_error_history = torch.zeros(rounds)
 run_time_history = torch.zeros(rounds)
 
+
+int_points = domain.rand_int_points(0., 81)
+bound_points = domain.rand_bound_points(40)
+
+#int_points, bound_points = get_unif_grid(side_length, dim, 11) 
+
 for i in range(rounds):
     
     training_params['alpha'] = alpha_list[i]
     training_params['delta'] = delta_list[i]
-    training_params['n_coloc_points'] = N_col_list[i]
-    training_params['n_boundary_points'] = N_b_list[i]
+    
+    #training_params['delta'] = side_length/N_list[i]  
     
     t0 = t()
-    total_loss, PDE_loss, boundary_loss = train(NN, domain, training_params)
+    total_loss, PDE_loss, boundary_loss = train_finite_sum(NN, int_points, bound_points, training_params)
     t1 = t() - t0 
     
-    #plt.plot(total_loss)
-    #plt.plot(PDE_loss)
-    #plt.plot(boundary_loss)
+    epochs =  training_params['epochs']
+    #plt.plot(torch.arange(epochs)+1, total_loss)
+    #plt.plot(torch.arange(epochs)+1, PDE_loss)
+    #plt.plot(torch.arange(epochs)+1, boundary_loss)
     #plt.show()
     
     
@@ -96,16 +107,16 @@ for i in range(rounds):
     Y_axis = 1
 
     n_grid = 100
-    plot_2d_proj(X_axis, Y_axis, NN, n_grid, side_length)
-    plot_2d_proj_w(X_axis, Y_axis, NN, n_grid, side_length, training_params, tol = 1e-2)
-
+    #plot_2d_proj(X_axis, Y_axis, NN, n_grid, side_length)
+    
+    plot_2d_proj_w(X_axis, Y_axis, NN, n_grid, side_length, training_params, int_points, tol = 1e-2)
 
     
 print('Mean square error:', MSE)
 print('L-infinity error:', L_inf)
 print('Run time:', run_time_history.sum())
 
-#plot_2d_proj_w(X_axis, Y_axis, NN, n_grid, side_length, training_params)
+#plot_2d_proj_w(X_axis, Y_axis, NN, n_grid, side_length, training_params, int_points)
 
 #%%
 import numpy as np
