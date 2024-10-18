@@ -14,7 +14,7 @@ import numpy as np
 
 
 def plot_2d_proj_w(axis1, axis2, NN, n_grid, side_length, training_params, 
-                   colloc_points = None, tol = 1e-1, dim = None):
+                   colloc_points = None,  dim = None):
     
     
     H = training_params['numerical_scheme']
@@ -38,10 +38,10 @@ def plot_2d_proj_w(axis1, axis2, NN, n_grid, side_length, training_params,
     
     W = H(NN, Grid, d, alpha, beta, c) - f(Grid)
     
-    W[W**2 > tol] = 1.
-    W[W**2 <= tol] = 0.
+    W = W**2
 
     plt.pcolormesh(GridX.detach(), GridY.detach(), W.detach())
+    plt.clim(0, 1)
     plt.title('F.D. LxF residual')
     
     if colloc_points is not None:
@@ -49,3 +49,5 @@ def plot_2d_proj_w(axis1, axis2, NN, n_grid, side_length, training_params,
     
     plt.colorbar()
     plt.show()
+    
+    return W
