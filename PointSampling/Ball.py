@@ -80,13 +80,14 @@ class data_gen_ball_unif:
     
     def rand_int_points(self, delta, nPDE):
         
-        #scaling parameters
-        a = (self.r_min + delta)**self.dim
-        b = (self.r_max - delta)**self.dim - a
         
         if self.r_min > 0:
+            #scaling parameters
+            a = (self.r_min + delta)**self.dim
+            b = (self.r_max - delta)**self.dim - a
             Rs = (a + b*torch.rand(nPDE))**(1/self.dim)
         else:
+            b = (self.r_max - delta)**self.dim
             Rs = (b*torch.rand(nPDE))**(1/self.dim)
         
         X = unif_sample_sphere(nPDE, self.dim)

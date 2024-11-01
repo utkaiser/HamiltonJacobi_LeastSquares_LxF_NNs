@@ -56,7 +56,7 @@ training_params = {
     'beta': 0.,  ## parameter for the +u_i term
     
     'optimizer': optim.SGD(NN.parameters(), lr = .02, momentum = .2),
-    'num_iterations': 5000,
+    'num_iterations': 500,
     'lambda': 1. #weight parameter for the boundary loss
     }
 

@@ -7,6 +7,7 @@ Created on Mon Apr 22 20:08:38 2024
 """
 
 import torch
+import matplotlib.pyplot as plt
 
 
 def unif_sample_sphere(N, dim):
@@ -17,7 +18,7 @@ def unif_sample_sphere(N, dim):
     return X/X_norms
 
 
-def error_ball(NN, R, n_points):
+def error_ball(NN, R, n_points, display = False):
     
     dim = NN.L1.in_features
     
@@ -37,6 +38,30 @@ def error_ball(NN, R, n_points):
         MSE = ((Y - Y_hat)**2).mean()
         
         L_inf_error = (Y - Y_hat).abs().max()
+        
+        if display == True:
+            
+            with torch.no_grad():
+                
+                n = int(n_points**(1/2))
+                r_grid = torch.linspace(0, R, n)
+                theta_grid = torch.linspace(0, 2*torch.pi, n)
+                Grid_r, Grid_theta = torch.meshgrid(r_grid, theta_grid)
+                Grid = torch.zeros([n, n, dim])
+                GridX = Grid_r * torch.cos(Grid_theta)
+                GridY = Grid_r * torch.sin(Grid_theta)
+                Grid[:,:,0] = GridX
+                Grid[:,:,1] = GridY
+                
+                Y = R - Grid.norm(2, -1)
+                Y_hat = Y_hat = NN(Grid).squeeze()
+                error =  (Y - Y_hat).abs()
+
+                plt.pcolormesh(GridX, GridY, error)
+                plt.clim(0, 1)
+                plt.colorbar()
+                plt.title('Absolute error w.r.t. ground truth')
+                plt.show()        
     
     return MSE, L_inf_error
 

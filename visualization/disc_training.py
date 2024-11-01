@@ -44,15 +44,23 @@ def plot_2d_proj_w(axis1, axis2, NN, n_grid, radii, training_params,
     W = H(NN, Grid, d, alpha, beta, c) - f(Grid)
     
     W = W**2
-
+    
     plt.pcolormesh(GridX.detach(), GridY.detach(), W.detach())
     plt.clim(0, 1)
+    #plt.axis('equal')
     plt.title('F.D. LxF residual')
     
     if colloc_points is not None:
         plt.scatter(colloc_points[:, 0], colloc_points[:, 1], c='red')
     
-    plt.colorbar()
+    
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.title('$\delta =$' + str(d), fontsize = 'xx-large')
+    
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=14)
+    
     plt.show()
     
     return W
