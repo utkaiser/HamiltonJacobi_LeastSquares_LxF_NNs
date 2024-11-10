@@ -7,6 +7,7 @@ Created on Tue Jun  4 12:00:16 2024
 """
 
 import torch.optim as optim
+import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from time import time as t
@@ -28,6 +29,9 @@ dim = 2
 
 side_length = 6.
 
+def delta(alpha, Lip):
+    return (side_length/(2*np.pi))*np.arcsin(np.sqrt(Lip/alpha))
+
 domain = data_gen_cube(side_length, dim)
 
 #Right-hand-side of the PDE
@@ -38,13 +42,13 @@ def f(X):
 def g(X):    
     return 0
 
-delta_list = [.7, .5, .3, .1, .01]
-alpha_list = [2.5, 2., 1.5, 1., .5]
-N_col_list = [80, 80, 80, 80, 80]
-N_b_list = [20, 20, 20, 20, 20]
+delta_list = [.7, 0.1]
+alpha_list = [2.5, 1.]
+N_col_list = [80, 80]
+N_b_list = [20, 20]
 rounds = len(delta_list)
 
-NN = FCFF_3L([dim,20,20])
+NN = FCFF_3L([dim,30,30])
 #NN = FCFF_2L([dim,40])
 
 training_params = {
@@ -56,8 +60,8 @@ training_params = {
     
     'beta': 0.,  ## parameter for the +u_i term
     
-    'optimizer': optim.SGD(NN.parameters(), lr = .02, momentum = .2),
-    'num_iterations': 500,
+    'optimizer': optim.SGD(NN.parameters(), lr = .05, momentum = .2),
+    'num_iterations': 5000,
     'lambda': 1. #weight parameter for the boundary loss
     }
 
@@ -97,7 +101,7 @@ for i in range(rounds):
 
     n_grid = 100
     plot_2d_proj(X_axis, Y_axis, NN, n_grid, side_length)
-    plot_2d_proj_w(X_axis, Y_axis, NN, n_grid, side_length, training_params, tol = 1e-2)
+    #plot_2d_proj_w(X_axis, Y_axis, NN, n_grid, side_length, training_params)
 
 
     
@@ -106,6 +110,20 @@ print('L-infinity error:', L_inf)
 print('Run time:', run_time_history.sum())
 
 #plot_2d_proj_w(X_axis, Y_axis, NN, n_grid, side_length, training_params)
+
+#%%
+
+training_params['alpha'] = -3.
+training_params['delta'] = 0.4
+
+NN_new = FCFF_3L([dim,30,30])
+NN_new.load_state_dict(NN.state_dict())
+training_params['optimizer'] = optim.SGD(NN_new.parameters(), lr = .05, momentum = .2)
+
+
+total_loss, PDE_loss, boundary_loss = train(NN_new, domain, training_params)
+
+plot_2d_proj(X_axis, Y_axis, NN_new, n_grid, side_length)
 
 #%%
 import numpy as np

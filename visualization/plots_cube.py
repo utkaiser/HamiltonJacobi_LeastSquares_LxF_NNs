@@ -34,8 +34,12 @@ def plot_2d_proj(axis1, axis2, NN, n_grid, side_length, dim = None):
     #plt.show()
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    ax.plot_surface(np.array(GridX), np.array(GridY), np.array(V.detach()), cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    ax.plot_surface(np.array(GridX), np.array(GridY), np.array(V.detach()), 
+                    cmap=cm.viridis, linewidth=0, antialiased=False)
+    
     ax.axes.set_zlim3d(bottom=0, top=side_length/2)
+    ax.axes.set_xlim3d(-side_length/2, side_length/2)
+    ax.axes.set_ylim3d(-side_length/2, side_length/2)
     plt.show()
 
 

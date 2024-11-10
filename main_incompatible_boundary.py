@@ -12,14 +12,14 @@ import torch
 
 ## Domain
 
-side_length = 5.
+side_length = 6.
 
-from NeuralNetworks.NNs import FCFF_4L
+from NeuralNetworks.NNs import FCFF_3L
 
 dim = 2
 
 
-NN = FCFF_4L([dim,40,40,40,40])
+NN = FCFF_3L([dim,40,40])
 
 
 
