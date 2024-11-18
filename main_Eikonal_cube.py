@@ -114,7 +114,7 @@ print('Run time:', run_time_history.sum())
 #%%
 
 training_params['alpha'] = -3.
-training_params['delta'] = 0.4
+training_params['delta'] = 0.7
 
 NN_new = FCFF_3L([dim,30,30])
 NN_new.load_state_dict(NN.state_dict())

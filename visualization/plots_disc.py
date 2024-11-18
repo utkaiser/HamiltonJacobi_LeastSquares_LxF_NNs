@@ -39,12 +39,15 @@ def plot_2d_proj_disc(axis1, axis2, NN, n_theta, n_r, radii, shift = 0.):
 
     V = NN(Grid).squeeze()
 
-    plt.pcolormesh(GridX.detach(), GridY.detach(), V.detach())
-    plt.show()
+    #plt.pcolormesh(GridX.detach(), GridY.detach(), V.detach())
+    #plt.show()
     
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    ax.plot_surface(np.array(GridX), np.array(GridY), np.array(V.detach()), cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    ax.plot_surface(np.array(GridX), np.array(GridY), np.array(V.detach()),
+                    cmap=cm.viridis, linewidth=0, antialiased=False)
     ax.axes.set_zlim3d(bottom=0, top=max(radii))
+    ax.axes.set_xlim3d(-max(radii), max(radii))
+    ax.axes.set_ylim3d(-max(radii), max(radii))
     plt.show()
 
 
