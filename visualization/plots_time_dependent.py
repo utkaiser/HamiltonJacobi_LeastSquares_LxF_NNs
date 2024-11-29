@@ -44,7 +44,7 @@ def plot_2d_proj_time_dependent(axis1, axis2, NN, n_grid, t_grid, side_length, T
             #plt.show()
 
 
-def plot_level_set_time_dependent(axis1, axis2, NN, n_grid, t_grid, side_length, T, level = 0):
+def plot_level_set_time_dependent(axis1, axis2, NN, n_grid, t_grid, side_length, T, level = 0, P_t_Riccati = []):
     
     dim = NN.L1.in_features - 1
     
@@ -60,14 +60,28 @@ def plot_level_set_time_dependent(axis1, axis2, NN, n_grid, t_grid, side_length,
     Grid[:,:,:,1 + axis2] = GridY
     Grid[:,:,:, 0] = GridT[:, None, None]
     
+    if len( P_t_Riccati )>0:
+        X = Grid[0, :,:, 1:].reshape(-1, dim).numpy()
+        PX = (X@P_t_Riccati.transpose()).transpose()
+    
     with torch.no_grad():
         V = NN(Grid).squeeze()
 
         fig, ax = plt.subplots()
         for i in range(GridT.shape[0]):
+            
+            if  len( P_t_Riccati )>0:
+                t = GridT[i].numpy()
+                V_t = (PX[i]*X).sum(-1).reshape(GridX.shape)
+                CS = ax.contour(np.array(GridX), np.array(GridY),
+                                V_t+t-1, [t], colors = ['green'], linestyles = 'dashed')
+                #ax.clabel(CS, inline=True, fontsize=10)
+            
             CS = ax.contour(np.array(GridX), np.array(GridY), 
-                            np.array(V[i].detach()+GridT[i]), [GridT[i]])
+                            np.array(V[i].detach()+GridT[i]), [GridT[i]], colors = ['red'])
             ax.clabel(CS, inline=True, fontsize=10)
         
         ax.set_aspect('equal', 'box')
         plt.show()
+    
+    return V

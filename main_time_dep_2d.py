@@ -9,6 +9,9 @@ Created on Wed Jun 12 15:56:41 2024
 import torch.optim as optim
 import matplotlib.pyplot as plt
 import torch
+import numpy as np
+
+from error_test.error_Riccati import Riccati_diff_Eq
 
 ## Domain
 
@@ -36,7 +39,7 @@ from Hamiltonians.time_dependent_LxF import Eikonal_sq_LxF_Euler_explicit
 """
 We solve the boundary value problem
 
-u_t + c(x) |grad u| = f(x)    on (0,T)x\R^d
+u_t + c(x) |grad u|^2 = f(x)    on (0,T)x\R^d
 u(x) =    g(x)            on \R^d
 
 the function f(x) has to be non-negative.
@@ -71,7 +74,6 @@ training_params = {
     'beta': 0.,  ## parameter for the +u term
     
     'optimizer': optim.SGD(NN.parameters(), lr = .005, momentum = .2),
-    'num_iterations': 5000,
     
     'lambda': 1. #weight parameter for the boundary loss
     }
@@ -83,9 +85,12 @@ from visualization.plots_time_dependent import plot_level_set_time_dependent
 delta_x_list = [.5, .3, .2, .1]
 delta_t_list = [.05, .03, .02, .01]
 alpha_list = [2.5, 2., 1.5, 1.]
-N_col_list = [40, 80, 120, 200]
-N_b_list = [40, 40, 40, 40, 40]
+N_col_list = [200, 200, 200, 200]
+N_b_list = [40, 40, 40, 40]
+num_iterations = [2000, 3000, 5000, 8000]
 rounds = len(alpha_list)
+
+
 
 n_grid = 100
 
@@ -93,6 +98,10 @@ t_grid = 6
 
 X_axis = 0
 Y_axis = 1
+
+P0 = np.diag(a.squeeze())
+
+P_t = Riccati_diff_Eq(T, P0, t_grid, dim)
 
 for i in range(rounds):
 
@@ -102,27 +111,24 @@ for i in range(rounds):
     training_params['n_coloc_points'] = N_col_list[i]
     training_params['n_boundary_points'] = N_b_list[i]
     
-    if i == rounds-1:
-        training_params['num_iterations'] = 8000
+    training_params['num_iterations'] = num_iterations[i]
 
     total_loss, PDE_loss, boundary_loss = train_time_dependent(NN, domain, training_params)
 
 
-    plt.plot(total_loss)
-    plt.title('Total loss')
-    plt.show()
+    #plt.plot(total_loss)
+    #plt.title('Total loss')
+    #plt.show()
     
-    plt.plot(PDE_loss)
-    plt.plot(boundary_loss)
-    plt.title('PDE + boundary loss')
-    plt.show()
+    #plt.plot(PDE_loss)
+    #plt.plot(boundary_loss)
+    #plt.title('PDE + boundary loss')
+    #plt.show()
     
     
 
-    plot_level_set_time_dependent(X_axis, Y_axis, NN, n_grid, t_grid, side_length, T)
-    print('R(u) =', PDE_loss[-20:].mean())
-    print('L(u)=', boundary_loss[-20:].mean())   
+    #plot_level_set_time_dependent(X_axis, Y_axis, NN, n_grid, t_grid, side_length, T)
+    #print('R(u) =', PDE_loss[-20:].mean())
+    #print('L(u)=', boundary_loss[-20:].mean())
     
-#%%
-
-plot_level_set_time_dependent(X_axis, Y_axis, NN, n_grid, t_grid, side_length, T) 
+    plot_level_set_time_dependent(X_axis, Y_axis, NN, n_grid, t_grid, side_length, T, P_t_Riccati = P_t) 
