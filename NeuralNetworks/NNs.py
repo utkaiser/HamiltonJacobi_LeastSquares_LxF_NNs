@@ -42,6 +42,23 @@ class FCFF_3L(nn.Module):
         Y = F.relu(self.L2(Y))
         
         return self.L3(Y)
+
+class FCFF_3L_ELU(nn.Module):
+    def __init__(self, arch):
+        super(FCFF_3L_ELU, self).__init__()
+        
+        self.L1 = nn.Linear(arch[0], arch[1], bias = True)
+        self.L2 = nn.Linear(arch[1], arch[2], bias = True)
+        self.L3 = nn.Linear(arch[2], 1, bias = True)
+        self.activate = nn.ELU()
+        #self.activate = nn.SiLU()
+        
+    def forward(self, X):
+        
+        Y = self.activate(self.L1(X))
+        Y = self.activate(self.L2(Y))
+        
+        return self.L3(Y)
     
 class FCFF_2L(nn.Module):
     def __init__(self, arch):

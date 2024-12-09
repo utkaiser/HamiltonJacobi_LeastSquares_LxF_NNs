@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jun  4 12:00:16 2024
+Created on Mon Dec  9 17:59:05 2024
 
-@author: carlosesteveyague
+@author: usuario
 """
 
 import torch.optim as optim
@@ -12,15 +11,14 @@ import matplotlib.pyplot as plt
 import torch
 from time import time as t
 
-from NeuralNetworks.NNs import FCFF_3L, FCFF_2L, FCFF_3L_ELU
+from NeuralNetworks.NNs import FCFF_3L_ELU
 
 from PointSampling.Cube import data_gen_cube
-from visualization.plots_cube import plot_2d_proj, plot_level_set_cube #, plot_2d_proj_w
+from visualization.plots_cube import plot_2d_proj
 from visualization.cube_training import plot_2d_proj_w
 
 
-from Hamiltonians.Eikonal_LxF import Eikonal_sq_LF_multiD
-#from Hamiltonians.H_Autograd import Eikonal_sq_autograd
+from Hamiltonians.H_Autograd import Eikonal_sq_autograd
 
 from Training.training import train
 from error_test.cube_error import error_cube
@@ -41,16 +39,15 @@ def g(X):
     return 0
 
 delta_list = [.7, 0.4, .3, .2, .1]
-alpha_list = [2., 2., 2., 2., 2.]
+alpha_list = [100., 2., 2., 2., 2.]
 N_col_list = [80, 80, 80, 80, 80]
 N_b_list = [20, 20, 20, 20, 20]
 rounds = len(delta_list)
 
-NN = FCFF_3L([dim,30,30])
-#NN = FCFF_2L([dim,40])
+NN = FCFF_3L_ELU([dim,30,30])
 
 training_params = {
-    'numerical_scheme': Eikonal_sq_LF_multiD,
+    'numerical_scheme': Eikonal_sq_autograd,
 
     'f': f,
     'g': g,
@@ -81,12 +78,6 @@ for i in range(rounds):
     total_loss, PDE_loss, boundary_loss = train(NN, domain, training_params)
     t1 = t() - t0 
     
-    #plt.plot(total_loss)
-    #plt.plot(PDE_loss)
-    #plt.plot(boundary_loss)
-    #plt.show()
-    
-    
     MC_points = int(1e5) # Number of grid points for comparison with the ground truth
     MSE, L_inf = error_cube(NN, side_length, MC_points)
     
@@ -107,24 +98,8 @@ print('Mean square error:', MSE)
 print('L-infinity error:', L_inf)
 print('Run time:', run_time_history.sum())
 
-#plot_2d_proj_w(X_axis, Y_axis, NN, n_grid, side_length, training_params)
 
 #%%
-
-#training_params['alpha'] = .1
-#training_params['delta'] = 0.01
-
-#NN_new = FCFF_3L([dim,30,30])
-#NN_new.load_state_dict(NN.state_dict())
-#training_params['optimizer'] = optim.SGD(NN_new.parameters(), lr = .05, momentum = .2)
-
-
-#total_loss, PDE_loss, boundary_loss = train(NN_new, domain, training_params)
-
-#plot_2d_proj(X_axis, Y_axis, NN_new, n_grid, side_length)
-
-#%%
-import numpy as np
 
 from mpl_toolkits.axes_grid1 import host_subplot
 
@@ -149,8 +124,3 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title('$\log_{10} (E_{\infty})$', fontsize = 'xx-large')
 plt.show()
-
-
-#%%
-
-plot_level_set_cube(X_axis, Y_axis, NN, n_grid, side_length, levels = [0, .5, 1., 1.5, 2.5, 2.9], dim = None)
