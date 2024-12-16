@@ -1,4 +1,4 @@
 # Finite-differences least square methods for solving Hamilton-Jacobi equations using Neural Networks
 
 
-TO DO: create Readme file
+![Demo Video](./movies_paper/movie1.gif)
