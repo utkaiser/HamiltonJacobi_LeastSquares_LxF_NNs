@@ -40,14 +40,14 @@ def f(X):
 def g(X):    
     return 0
 
-delta_list = [.7, 0.4, .3, .2, .1]
-alpha_list = [2., 2., 2., 2., 2.]
-N_col_list = [80, 80, 80, 80, 80]
+delta_list = [.75, 0.5, .3, .1, .05]
+alpha_list = [2.5, 2., 1.5, 1., .5]
+N_col_list = [60, 60, 60, 60, 60]
 N_b_list = [20, 20, 20, 20, 20]
 rounds = len(delta_list)
 
-NN = FCFF_3L([dim,30,30])
-#NN = FCFF_2L([dim,40])
+#NN = FCFF_3L([dim,30,30])
+NN = FCFF_2L([dim,20])
 
 training_params = {
     'numerical_scheme': Eikonal_sq_LF_multiD,
@@ -58,7 +58,7 @@ training_params = {
     
     'beta': 0.,  ## parameter for the +u_i term
     
-    'optimizer': optim.SGD(NN.parameters(), lr = .05, momentum = .2),
+    'optimizer': optim.SGD(NN.parameters(), lr = .02, momentum = .2),
     'num_iterations': 1000,
     'lambda': 1. #weight parameter for the boundary loss
     }

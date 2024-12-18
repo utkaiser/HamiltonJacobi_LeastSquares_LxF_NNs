@@ -73,6 +73,20 @@ class FCFF_2L(nn.Module):
          
         return self.L2(Y)
 
+class FCFF_2L_ELU(nn.Module):
+    def __init__(self, arch):
+        super(FCFF_2L_ELU, self).__init__()
+        
+        self.L1 = nn.Linear(arch[0], arch[1], bias = True)
+        self.L2 = nn.Linear(arch[1], 1, bias = True)
+        self.activate = nn.ELU()
+        #self.activate = nn.SiLU()
+        
+    def forward(self, X):
+        
+        Y = self.activate(self.L1(X))
+        
+        return self.L2(Y)
 
 
 class ResNet15(nn.Module):

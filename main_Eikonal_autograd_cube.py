@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import torch
 from time import time as t
 
-from NeuralNetworks.NNs import FCFF_3L_ELU
+from NeuralNetworks.NNs import FCFF_3L_ELU, FCFF_2L_ELU
 
 from PointSampling.Cube import data_gen_cube
 from visualization.plots_cube import plot_2d_proj
@@ -39,12 +39,12 @@ def g(X):
     return 0
 
 delta_list = [.7, 0.4, .3, .2, .1]
-alpha_list = [100., 2., 2., 2., 2.]
-N_col_list = [80, 80, 80, 80, 80]
+alpha_list = [1., .5, .2, .1, .0]
+N_col_list = [60, 60, 60, 60, 60]
 N_b_list = [20, 20, 20, 20, 20]
 rounds = len(delta_list)
 
-NN = FCFF_3L_ELU([dim,30,30])
+NN = FCFF_2L_ELU([dim,20,20])
 
 training_params = {
     'numerical_scheme': Eikonal_sq_autograd,
@@ -55,7 +55,7 @@ training_params = {
     
     'beta': 0.,  ## parameter for the +u_i term
     
-    'optimizer': optim.SGD(NN.parameters(), lr = .05, momentum = .2),
+    'optimizer': optim.SGD(NN.parameters(), lr = .02, momentum = .2),
     'num_iterations': 1000,
     'lambda': 1. #weight parameter for the boundary loss
     }
