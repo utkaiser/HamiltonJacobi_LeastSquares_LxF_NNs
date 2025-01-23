@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import torch
 from time import time as t
 
-from NeuralNetworks.NNs import FCFF_3L, FCFF_2L, FCFF_3L_ELU
+from NeuralNetworks.NNs import FCFF_2L, FCFF_3L, FCFF_2L_ELU, FCFF_3L_ELU
 
 from PointSampling.Cube import data_gen_cube
 from visualization.plots_cube import plot_2d_proj, plot_level_set_cube #, plot_2d_proj_w
@@ -26,7 +26,7 @@ from Training.training import train
 from error_test.cube_error import error_cube
 
 
-dim = 2
+dim = 3
 
 side_length = 6.
 
@@ -46,8 +46,8 @@ N_col_list = [60, 60, 60, 60, 60]
 N_b_list = [20, 20, 20, 20, 20]
 rounds = len(delta_list)
 
-#NN = FCFF_3L([dim,30,30])
-NN = FCFF_2L([dim,20])
+NN = FCFF_3L_ELU([dim,30,30])
+#NN = FCFF_2L([dim,20])
 
 training_params = {
     'numerical_scheme': Eikonal_sq_LF_multiD,
@@ -59,7 +59,7 @@ training_params = {
     'beta': 0.,  ## parameter for the +u_i term
     
     'optimizer': optim.SGD(NN.parameters(), lr = .02, momentum = .2),
-    'num_iterations': 1000,
+    'num_iterations': 3000,
     'lambda': 1. #weight parameter for the boundary loss
     }
 

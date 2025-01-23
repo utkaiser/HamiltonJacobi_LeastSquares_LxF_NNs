@@ -39,12 +39,12 @@ def g(X):
     return 0
 
 delta_list = [.7, 0.4, .3, .2, .1]
-alpha_list = [1., .5, .2, .1, .0]
+alpha_list = [1., .5, .0, .0, .0]
 N_col_list = [60, 60, 60, 60, 60]
 N_b_list = [20, 20, 20, 20, 20]
 rounds = len(delta_list)
 
-NN = FCFF_2L_ELU([dim,20,20])
+NN = FCFF_2L_ELU([dim,20,30])
 
 training_params = {
     'numerical_scheme': Eikonal_sq_autograd,
@@ -56,7 +56,7 @@ training_params = {
     'beta': 0.,  ## parameter for the +u_i term
     
     'optimizer': optim.SGD(NN.parameters(), lr = .02, momentum = .2),
-    'num_iterations': 1000,
+    'num_iterations': 3000,
     'lambda': 1. #weight parameter for the boundary loss
     }
 
