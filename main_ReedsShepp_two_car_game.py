@@ -19,6 +19,7 @@ n_freq = 4
 
 
 NN = periodic_3L_two_players([4,80,80], n_freq)
+NN_improved = periodic_3L_two_players([4,200,200], n_freq)
 
 from PointSampling.Cars import data_gen_two_car_game
 
@@ -77,31 +78,37 @@ alpha_list = [2.5, 2., 1.5]
 N_col_list = [800, 800, 800]
 N_b_list = [100, 100, 100]
 rounds = len(delta_list)
+total_loss_list, total_loss_list_improved = [], []
 
 t1 = t()
 for i in range(rounds):
+    print('------ epoch', i)
     
     training_params['alpha'] = alpha_list[i]
     training_params['delta x'] = delta_list[i]
     training_params['delta theta'] = delta_list[i]
     training_params['n_coloc_points'] = N_col_list[i]
     training_params['n_boundary_points'] = N_b_list[i]
-
-
+    training_params_improved = training_params.copy()
+    training_params_improved['optimizer'] = optim.AdamW(NN_improved.parameters(), lr = .005)
 
     total_loss, PDE_loss, boundary_loss = train_two_car_game(NN, domain, training_params)
+    total_loss_improved, PDE_loss_improved, boundary_loss_improved = train_two_car_game(NN_improved, domain, training_params_improved)
+    total_loss_list.append(total_loss.mean().item())
+    total_loss_list_improved.append(total_loss_improved.mean().item())
 
+    # plt.plot(total_loss)
+    # plt.title('Total loss')
+    # plt.show()
 
-    plt.plot(total_loss)
-    plt.title('Total loss')
-    plt.show()
-
-    plt.plot(PDE_loss)
-    plt.plot(boundary_loss)
-    plt.title('PDE loss + Boundary loss')
-    plt.show()
+    # plt.plot(PDE_loss)
+    # plt.plot(boundary_loss)
+    # plt.title('PDE loss + Boundary loss')
+    # plt.show()
 
 #torch.save(NN.state_dict(), 'trained_models/ReedShepp_loop')
+print("total_loss_list", total_loss_list)
+print("total_loss_list_improved", total_loss_list_improved)
 
 #%%
 
@@ -129,20 +136,17 @@ trajectory_p1, trajectory_p2 = ReedsShepp_two_car_game_4d(x1, x2, NN, x_step, th
 
 side_length = 2*max(trajectory_p1[:, :-1].abs().max(), trajectory_p2[:, :-1].abs().max()) + 1.
 
-plot_traj_game([trajectory_p1, trajectory_p2], side_length)
+# plot_traj_game([trajectory_p1, trajectory_p2], side_length)
 
 times = x_step*torch.arange(trajectory_p1.shape[0])
 
 x1 = trajectory_p1[:, :2]
 x2 = trajectory_p2[:, :2]
 dists = (x1 - x2).norm(2,-1)
-plt.plot(times, dists)
-plt.show()
+# plt.plot(times, dists)
+# plt.show()
 
 
 #%%
 from visualization.plots_cube import plot_traj_game_movie
-
-
-
-plot_traj_game_movie([trajectory_p1, trajectory_p2], side_length)
+#plot_traj_game_movie([trajectory_p1, trajectory_p2], side_length)

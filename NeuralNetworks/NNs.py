@@ -19,13 +19,97 @@ class FCFF_4L(nn.Module):
         self.L3 = nn.Linear(arch[2], arch[3], bias = True)
         self.L4 = nn.Linear(arch[3], 1, bias = True)
         
-    def forward(self, X):
-        
+    def forward(self, X, _):  # delta_t unused here
         Y = F.relu(self.L1(X))
         Y = F.relu(self.L2(Y))
         Y = F.relu(self.L3(Y))
-        
+
         return self.L4(Y)
+    
+
+class FCFF_4L_modified_1(nn.Module):
+    def __init__(self, arch):
+        super(FCFF_4L_modified_1, self).__init__()
+        
+        self.L1 = nn.Linear(arch[0], arch[1], bias = True)
+        self.L2 = nn.Linear(arch[1], arch[2], bias = True)
+        self.L3 = nn.Linear(arch[2], arch[3], bias = True)
+        self.L4 = nn.Linear(arch[3], 1, bias = True)
+
+        self.w_0 = nn.Parameter(torch.rand(1))
+
+        self.g_L1 = nn.Linear(arch[0]-1, arch[1], bias = True)
+        self.g_L2 = nn.Linear(arch[1], arch[2], bias = True)
+        self.g_L3 = nn.Linear(arch[2], arch[3], bias = True)
+        self.g_L4 = nn.Linear(arch[3], 1, bias = True)
+        
+    def forward(self, X, delta_t=0):
+        
+        if len(X.size()) == 3:
+            t = X[:,:,0]
+            x_without_t = X[:,:,1:]
+        elif len(X.size()) == 2:
+            t = X[:,0]
+            x_without_t = X[:,1:]
+        else:
+            t = X[:,:,:,0]
+            x_without_t = X[:,:,:,1:]
+
+        g_Y = F.relu(self.g_L1(x_without_t))
+        g_Y = F.relu(self.g_L2(g_Y))
+        g_Y = F.relu(self.g_L3(g_Y))
+        g_theta = self.g_L4(g_Y)
+
+        Y = F.relu(self.L1(X))
+        Y = F.relu(self.L2(Y))
+        Y = F.relu(self.L3(Y))
+        F_theta = self.L4(Y)
+
+        res = g_theta.squeeze() + torch.tanh(self.w_0*(t-delta_t)) * F_theta.squeeze()
+        return res.unsqueeze(-1)
+
+
+class FCFF_4L_modified_2(nn.Module):
+    def __init__(self, arch):
+        super(FCFF_4L_modified_2, self).__init__()
+        
+        self.g_L1 = nn.Linear(arch[0]-1, arch[1], bias = True)
+        self.g_L2 = nn.Linear(arch[1], arch[2], bias = True)
+        self.g_L3 = nn.Linear(arch[2], arch[3], bias = True)
+        self.g_L4 = nn.Linear(arch[3], 1, bias = True)
+        self.w_0 = nn.Parameter(torch.rand(1))
+        
+        self.L1 = nn.Linear(arch[0]+1, arch[1], bias = True)
+        self.L2 = nn.Linear(arch[1], arch[2], bias = True)
+        self.L3 = nn.Linear(arch[2], arch[3], bias = True)
+        self.L4 = nn.Linear(arch[3], 1, bias = True)
+        
+    def forward(self, X, delta_t=0):
+        
+        if len(X.size()) == 3:
+            t = X[:,:,0]
+            x_without_t = X[:,:,1:]
+        elif len(X.size()) == 2:
+            t = X[:,0]
+            x_without_t = X[:,1:]
+        else:
+            t = X[:,:,:,0]
+            x_without_t = X[:,:,:,1:]
+
+        g_Y = F.relu(self.g_L1(x_without_t))
+        g_Y = F.relu(self.g_L2(g_Y))
+        g_Y = F.relu(self.g_L3(g_Y))
+        g_theta = self.g_L4(g_Y)
+
+        X_and_g = torch.cat([X, g_theta], dim = -1)
+        Y = F.relu(self.L1(X_and_g))
+        Y = F.relu(self.L2(Y))
+        Y = F.relu(self.L3(Y))
+        F_theta = self.L4(Y).squeeze()
+
+        res = g_theta.squeeze() + torch.tanh(self.w_0*(t-delta_t)) * F_theta
+
+        return res.unsqueeze(-1)
 
 
 class FCFF_3L(nn.Module):

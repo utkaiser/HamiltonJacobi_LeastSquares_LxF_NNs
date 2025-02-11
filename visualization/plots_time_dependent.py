@@ -44,44 +44,54 @@ def plot_2d_proj_time_dependent(axis1, axis2, NN, n_grid, t_grid, side_length, T
             #plt.show()
 
 
-def plot_level_set_time_dependent(axis1, axis2, NN, n_grid, t_grid, side_length, T, level = 0, P_t_Riccati = []):
-    
-    dim = NN.L1.in_features - 1
-    
-    Xgrid = torch.linspace(-side_length/2, side_length/2, n_grid)
+def plot_level_set_time_dependent(axis1, axis2, NNs, delta_t, n_grid, t_grid, side_length, T, level = 0, P_t_Riccati = []):
+    V_dict = {}
+    for name, NN in NNs.items():
+        if name == 'NN_modified_2':
+            dim = NN.L1.in_features - 2
+        else:
+            dim = NN.L1.in_features - 1
+        
+        Xgrid = torch.linspace(-side_length/2, side_length/2, n_grid)
 
-    GridX, GridY = torch.meshgrid(Xgrid,Xgrid)
-    
-    GridT = torch.linspace(0, T, t_grid)
-    
-    Grid = torch.zeros([t_grid, n_grid, n_grid, dim + 1])
-    
-    Grid[:,:,:,1 + axis1] = GridX
-    Grid[:,:,:,1 + axis2] = GridY
-    Grid[:,:,:, 0] = GridT[:, None, None]
-    
-    if len( P_t_Riccati )>0:
-        X = Grid[0, :,:, 1:].reshape(-1, dim).numpy()
-        PX = (X@P_t_Riccati.transpose()).transpose()
-    
-    with torch.no_grad():
-        V = NN(Grid).squeeze()
+        GridX, GridY = torch.meshgrid(Xgrid,Xgrid)
+        
+        GridT = torch.linspace(0, T, t_grid)
+        
+        Grid = torch.zeros([t_grid, n_grid, n_grid, dim + 1])
+        
+        Grid[:,:,:,1 + axis1] = GridX
+        Grid[:,:,:,1 + axis2] = GridY
+        Grid[:,:,:, 0] = GridT[:, None, None]
+        
+        if len( P_t_Riccati )>0:
+            X = Grid[0, :,:, 1:].reshape(-1, dim).numpy()
+            PX = (X@P_t_Riccati.transpose()).transpose()
+        
+        with torch.no_grad():
+            V = NN(Grid,delta_t).squeeze()
+            V_dict[name] = V
 
-        fig, ax = plt.subplots()
+    
+    fig, ax = plt.subplots(1,len(V_dict))
+    plt_idx = 0
+    for name, V in V_dict.items():
         for i in range(GridT.shape[0]):
             
             if  len( P_t_Riccati )>0:
                 t = GridT[i].numpy()
                 V_t = (PX[i]*X).sum(-1).reshape(GridX.shape)
-                CS = ax.contour(np.array(GridX), np.array(GridY),
+                CS = ax[plt_idx].contour(np.array(GridX), np.array(GridY),
                                 V_t+t-1, [t], colors = ['green'], linestyles = 'dashed')
                 #ax.clabel(CS, inline=True, fontsize=10)
             
-            CS = ax.contour(np.array(GridX), np.array(GridY), 
+            CS = ax[plt_idx].contour(np.array(GridX), np.array(GridY), 
                             np.array(V[i].detach()+GridT[i]), [GridT[i]], colors = ['red'])
-            ax.clabel(CS, inline=True, fontsize=10)
+            ax[plt_idx].clabel(CS, inline=True, fontsize=10)
         
-        ax.set_aspect('equal', 'box')
-        plt.show()
+        ax[plt_idx].set_aspect('equal', 'box')
+        ax[plt_idx].set_title(name)
+        plt_idx += 1
     
-    return V
+    plt.show()
+    

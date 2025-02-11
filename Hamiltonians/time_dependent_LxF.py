@@ -146,9 +146,9 @@ def Eikonal_sq_LxF_Euler_explicit(Phi, X, delta_x, delta_t, alpha, beta = 0., c 
     X_up = X.unsqueeze(-2) + delta_x*Id_x
     X_down = X.unsqueeze(-2) - delta_x*Id_x
     
-    U_center = Phi(X)
-    U_up = Phi(X_up).squeeze()
-    U_down = Phi(X_down).squeeze()
+    U_center = Phi(X, delta_t)
+    U_up = Phi(X_up, delta_t).squeeze()
+    U_down = Phi(X_down, delta_t).squeeze()
     
     if c == None:
         gradU_norm = (((U_up - U_down)/(2*delta_x))**2).sum(dim = -1)
@@ -163,7 +163,7 @@ def Eikonal_sq_LxF_Euler_explicit(Phi, X, delta_x, delta_t, alpha, beta = 0., c 
     Id_t[0,0] = 1
     X_t_up = X + delta_t*Id_t
     
-    U_t_up = Phi(X_t_up).squeeze()
+    U_t_up = Phi(X_t_up, delta_t).squeeze()
     
     dtU = (U_t_up - U_center.squeeze())/delta_t
     
@@ -171,4 +171,3 @@ def Eikonal_sq_LxF_Euler_explicit(Phi, X, delta_x, delta_t, alpha, beta = 0., c 
         return dtU + gradU_norm - alpha*(LapU)
     else:
         return dtU + gradU_norm - alpha*(LapU) + beta*U_center.squeeze()
-

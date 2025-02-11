@@ -78,16 +78,16 @@ def train_time_dependent(NN, domain, training_params):
     training_boundary_loss = torch.zeros(n_iter)
     
     for n in tqdm(range(n_iter)):
-          
+    
         interior_points = domain.rand_int_points(delta_x, delta_t, nPDE)
         boundary_points = domain.rand_bound_points(nBoundary)
         
         optimizer.zero_grad()
         
-        boundary_loss = ((NN(boundary_points).squeeze() - g(boundary_points))**2).mean()
+        boundary_loss = ((NN(boundary_points, delta_t).squeeze() - g(boundary_points))**2).mean()
         PDE_loss = ((num_scheme(NN, interior_points, delta_x, delta_t, alpha, beta, c) - f(interior_points))**2).mean()
         
-        loss =  PDE_loss + lam*boundary_loss
+        loss = PDE_loss + lam*boundary_loss
         loss.backward()
         optimizer.step()
         
