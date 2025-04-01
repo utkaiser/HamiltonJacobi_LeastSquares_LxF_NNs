@@ -21,7 +21,6 @@ class data_gen_one_car_OCP:
     
     def __init__(self, R, r_target):
         
-        
         self.r_target = r_target
         self.R = R
         
@@ -84,3 +83,36 @@ class data_gen_two_car_game:
         X_p2 = torch.cat([x_p2, Theta_p2], dim = -1)
         
         return X_p1, X_p2
+    
+
+class data_gen_one_plane_OCP:
+    
+    def __init__(self, R, r_target):
+        self.r_target = r_target
+        self.R = R
+        
+    def rand_int_points(self, d, nPDE):
+        x = unif_sample_sphere(nPDE, dim = 3)
+        r = self.r_target + d + (self.R - self.r_target - d)*torch.rand([nPDE, 1])
+        x = r*x
+        Theta = 2*torch.pi*torch.rand([nPDE, 1])
+        
+        return torch.cat([x, Theta], dim = -1)
+    
+    
+    def rand_bound_points(self, nBoundary, percentage_target = .5):
+        
+        n_target = int(percentage_target*nBoundary)
+        n_edges = nBoundary - n_target
+        
+        
+        x_target = self.r_target*unif_sample_sphere(n_target, dim=3)
+        Theta_target = 2*torch.pi*torch.rand([n_target, 1])       
+        X_target = torch.cat([x_target, Theta_target], dim = -1)
+
+        
+        x_out = self.R*unif_sample_sphere(n_edges, dim=3)
+        theta_out = 2*torch.pi*torch.rand([n_edges, 1])
+        X_out = torch.cat([x_out, theta_out], dim = -1)
+        
+        return X_target, X_out

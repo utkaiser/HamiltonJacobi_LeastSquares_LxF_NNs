@@ -154,3 +154,39 @@ def optimal_traj_Dubins_car_obs(x, NN, x_step, theta_step, side_length, r_target
                 dist = 1.
         
     return traj
+
+
+def optimal_traj_Dubins_plane(x, NN, x_step, theta_step, side_length, r_target, rho, max_n_step = 1000):
+        
+    
+    traj = x.unsqueeze(0)
+
+    print((x[:-1].abs().max() < side_length), x[:-1].norm() > r_target)
+    while (x[:-1].abs().max() < side_length) and x[:-1].norm() > r_target and traj.shape[0] < max_n_step:
+        
+        z_step = theta_step
+        c=1
+        with torch.no_grad():
+            x_up_theta = x + theta_step*torch.tensor([0.,0., 0., 1.])
+            x_up_theta[-1] = x_up_theta[-1]%(2*torch.pi)
+            x_down_theta = x - theta_step*torch.tensor([0.,0.,0., 1.])
+            x_down_theta[-1] = x_down_theta[-1]%(2*torch.pi)
+            grad_theta = (NN(x_up_theta) - NN(x_down_theta))/(2*theta_step)
+            
+            theta_dir = -torch.sign(grad_theta)
+            
+            x_up_z = x + z_step*torch.tensor([0.,0., 1., 0.])
+            x_down_z = x - z_step*torch.tensor([0.,0.,1., 0.])
+            grad_z = (NN(x_up_z) - NN(x_down_z))/(2*z_step)
+            z_dir = -torch.sign(grad_z)
+            
+            v = torch.tensor([x_step*torch.cos(x[-1]), x_step*torch.sin(x[-1]), z_step*z_dir*c, theta_step*theta_dir/rho])
+            
+            new_x = x + v
+            new_x[-1] = new_x[-1]%(2*torch.pi)
+            
+            traj = torch.cat((traj, new_x.unsqueeze(0)), dim = 0)
+            
+            x = new_x
+        
+    return traj

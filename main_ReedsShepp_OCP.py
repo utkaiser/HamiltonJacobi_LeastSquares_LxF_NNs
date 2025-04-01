@@ -11,17 +11,16 @@ import matplotlib.pyplot as plt
 import torch
 from time import time as t
 
-
-from NeuralNetworks.NNs import FCFF_3L_vec
+from PointSampling.Cars import data_gen_one_plane_OCP
+from NeuralNetworks.NNs import FCFF_3L_vec_plane
 
 
 n_freq = 10
 
 
-NN = FCFF_3L_vec([3,40,40], n_freq)
+NN = FCFF_3L_vec_plane([4,40,40], n_freq)
 
 
-from PointSampling.Cars import data_gen_one_car_OCP
 
 
 side_length = 12.
@@ -29,16 +28,14 @@ r_target = .2
 
 R = 5.
 
-domain = data_gen_one_car_OCP(R, r_target)
+domain = data_gen_one_plane_OCP(R, r_target)
 
 
 # maximum angular velocity for the car
 rho = 1.
 
-#%%
 
-
-from Hamiltonians.Cars import LxF_ReedsShepp_Car
+from Hamiltonians.Cars import LxF_Dubins_Plane
 
 def f(X):    
     return 1.
@@ -53,7 +50,7 @@ def g_ext(x):
 
     
 training_params = {
-    'numerical_scheme': LxF_ReedsShepp_Car,
+    'numerical_scheme': LxF_Dubins_Plane,
     'rho': rho,
     
     'f': f,
@@ -62,8 +59,8 @@ training_params = {
     
     'beta': 0.,
     
-    'optimizer': optim.SGD(NN.parameters(), lr = .001, momentum=.2),
-    #'optimizer': optim.Adam(NN.parameters(), lr = .001),
+    # 'optimizer': optim.SGD(NN.parameters(), lr = .001, momentum=.2),
+    'optimizer': optim.Adam(NN.parameters(), lr = .001),
     'num_iterations': 3000,
     'percentage of target points': .8,
     
@@ -77,10 +74,10 @@ from Training.Cars_training import train_Car_target
 
 
 delta_list = [.75, .6, .3]
-alpha_list = [2.5, 2.5, 2.5]
+alpha_list = [3,3,3]
 N_col_list = [800, 1000, 1200]
 N_b_list = [100, 100, 100]
-rounds = len(delta_list)
+rounds = 3  # len(delta_list)
 
 
 
@@ -93,50 +90,53 @@ for i in range(rounds):
     training_params['delta theta'] = delta_list[i]
     training_params['n_coloc_points'] = N_col_list[i]
     training_params['n_boundary_points'] = N_b_list[i]
+    training_params['c'] = 1.
     
     total_loss, PDE_loss, boundary_loss = train_Car_target(NN, domain, training_params)
 
-    plt.plot(total_loss)
-    plt.title('Total loss')
-    plt.show()
+    if i == 2:
+        plt.plot(total_loss)
+        plt.title('Total loss')
+        plt.show()
 
     
-    plt.plot(boundary_loss)
-    plt.plot(PDE_loss)
-    plt.title('Boundary loss + PDE loss')
-    plt.show()
+    # plt.plot(boundary_loss)
+    # plt.plot(PDE_loss)
+    # plt.title('Boundary loss + PDE loss')
+    # plt.show()
 
 print('Training time:', t() - t1)
 
 #torch.save(NN.state_dict(), 'trained_models/ReedShepp_OCP')
 
-#%%
 
-from visualization.feedback_traj_cube import optimal_traj_ReedsShepp_car
+from visualization.feedback_traj_cube import optimal_traj_Dubins_plane
 
 from visualization.plots_cube import plot_traj_cube, plot_traj_car_circ
 
 
 #NN = FCFF_3L_vec([3,60,60], n_freq)
 #NN.load_state_dict(torch.load('trained_models/ReedShepp_OCP'))
-#NN.eval()
+NN.eval()
 
 # Here we compute a feedback trajectory
+#%%
 
-x0 = torch.tensor([3.5, 2., .5*torch.pi])
+import torch
+x0 = torch.tensor([2., 1., 0,1*torch.pi])
 
 x_step = .05
 theta_step = .05
 
+r_target = .2
 r_target2 = r_target+.05
 
-trajectory = optimal_traj_ReedsShepp_car(x0, NN, x_step, theta_step, R, 
+trajectory = optimal_traj_Dubins_plane(x0, NN, x_step, theta_step, R, 
                                         r_target2, rho, max_n_step = 1000)
 
 
 n_grid = 100 
 
+print(trajectory.shape)
 plot_traj_car_circ([trajectory], 0, 1, NN, n_grid, side_length, rho)
-
-
 

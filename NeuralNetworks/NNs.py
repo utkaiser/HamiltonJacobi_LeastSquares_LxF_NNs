@@ -219,3 +219,36 @@ class periodic_3L_two_players(nn.Module):
         out = (Y*CosSin).sum(-1).reshape(X.shape[:-1])
         
         return out.unsqueeze(-1)
+    
+
+class FCFF_3L_vec_plane(nn.Module):
+
+    # This NN is used for the Cars' problem, which has to be periodic in theta
+
+    def __init__(self, arch, n_freq):
+        super(FCFF_3L_vec_plane, self).__init__()
+        
+        self.L1 = nn.Linear(arch[0] - 1, arch[1], bias = True)
+        self.L2 = nn.Linear(arch[1], arch[2], bias = True)
+        self.L3 = nn.Linear(arch[2], 2*n_freq - 1, bias = True)
+        
+        self.freqs = torch.arange(n_freq)
+        self.freqs_expand = torch.cat([self.freqs, self.freqs[1:]], dim = 0)
+        
+    def forward(self, X):
+        
+        X_reshaped = X.reshape([-1, 4])
+        
+        x = X_reshaped[:, :-1]
+        theta = X_reshaped[:, -1]
+        
+        Y = F.relu(self.L1(x))
+        Y = F.relu(self.L2(Y))
+        Y = self.L3(Y)
+        
+        xi = theta[:, None]*self.freqs
+        CosSin = torch.cat([torch.cos(xi), torch.sin(xi[:, 1:])], dim = -1)
+        
+        out = (Y*CosSin).sum(-1).reshape(X.shape[:-1])
+        
+        return out.unsqueeze(-1)
